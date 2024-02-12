@@ -5,7 +5,13 @@
 ```text
     sudo useradd -m altschool
     sudo passwd altschool
+    su altschool
+    mkdir code tests personal misc
 ```
+
+![My Image](./alt/a3.png)
+
+![My Image](./alt/a4.png)
 
 ## a. change directory to test directory using absolute pathname
 
