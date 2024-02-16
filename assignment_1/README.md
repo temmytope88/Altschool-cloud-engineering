@@ -94,4 +94,22 @@
 
 ## L. Disable password based authentication for ssh
 
+```shell
+    sudo vim /etc/ssh/sshd_config
+```
+
+```text
+    Edit the file as follows:
+    1. Find PasswordAuthentication and set to no
+    2. find usePam and set to no
+```
+
+![My Image](./alt/edited_page.png)
+
+```shell
+    sudo service sshd restart
+```
+
+![My Image](./alt/test.png)
+
 ## M. Disable root login for ssh
