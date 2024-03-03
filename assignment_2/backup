@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [[ $# -eq 2 ]]; then
+    # Directory to backup
+    directory_to_backup=$1
+
+    # Backup destination
+    backup_destination=$2
+
+    #check if the directory to backup exists
+    if [[ -e $directory_to_backup ]]; then 
+        
+        #check if the back_up destination exists
+        if [[ -e $backup_destination ]]; then
+
+            backup_filename="$backup_destination"
+
+            date=$(date +"%Y%m%d%H%M%S")
+
+            backup_filename="$backup_destination/$date.tar"
+
+            # Create a compressed archive of the directory
+            tar -cvf "$backup_filename" "$directory_to_backup"
+
+            echo "Backup created at: $backup_filename"
+        else
+            echo "improper usage: back up folder does not exists"
+
+        fi
+    else
+        echo "improper usage: directory does not exists"
+    fi
+else
+    echo "improper usage: incomplete arguments"
+fi

@@ -1,5 +1,4 @@
 #!/usr/bin/bash
-NUMBER_OF_ARG=$#
 
 # To check if a file is attached
 if [[ $# -eq 0 ]]; then
@@ -12,23 +11,27 @@ else
             if [[ -e $3 ]]; then
                 du -h $3 | sort -hr | head -n $2
             else
-                echo "file does not exists"
+                echo "Directory does not exists"
+                exit 1
             fi
         else
             if [[ -e $2 ]]; then
-                du -ah $2 | sort -hr | head -n 8
+                du -h $2 | sort -hr | head -n 8
             else
-                echo "file does not exist"
+                echo "Directory file does not exist"
+                exit 1
             fi
         fi
 
     elif [[ $1 == "-d" ]]; then #checking if the option is d
         if [[ -e $2 ]]; then
-            du -h $2
+            du -ah $2
         else
-            echo "file does not exist"
+            echo "Directory does not exist"
+            exit 1
         fi
     else
         echo "error: improper usage"
+        exit 1
     fi
 fi
