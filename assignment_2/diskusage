@@ -1,6 +1,15 @@
 #!/usr/bin/bash
 
 # To check if a file is attached
+# Function to check if input is an integer
+is_integer() {
+    local num=$1
+    if [[ $num =~ ^[0-9]+$ ]]; then
+        return 0  # Input is an integer
+    else
+        return 1  # Input is not an integer
+    fi
+}
 if [[ $# -eq 0 ]]; then
     echo "error: no file directory indicated"
     exit 1
@@ -8,14 +17,19 @@ else
     if [[ $1 == "-n" ]]; then #checking if the argument is -n
 
         if [[ $# == 3 ]]; then #checking if the -n option comes with a number
-            if [[ -e $3 ]]; then
-                du -h $3 | sort -hr | head -n $2
+            if [[ -d $3 ]]; then
+                if is_integer "$2"; then
+                    du -h $3 | sort -hr | head -n $2
+                    #echo "$1 is an integer."
+                else
+                    echo "it must be an integer."
+                fi
             else
                 echo "Directory does not exists"
                 exit 1
             fi
         else
-            if [[ -e $2 ]]; then
+            if [[ -d $2 ]]; then
                 du -h $2 | sort -hr | head -n 8
             else
                 echo "Directory file does not exist"
@@ -25,10 +39,26 @@ else
 
     elif [[ $1 == "-d" ]]; then #checking if the option is d
         if [[ -e $2 ]]; then
-            du -ah $2
+            du -ah $2 | head -n 8
         else
             echo "Directory does not exist"
             exit 1
+        fi	
+    elif [[ $1 == "-d" && $2 == "-n" ]]; then
+        if [[ $# == 5 ]]; then
+            if [[ -d $4 ]]; then
+                du -ah $4 | head -n $3
+            else
+                echo "Directory does not eexist"
+            fi
+        elif [[ $# == 4 ]]; then
+            if [[ -d $3 ]]; then
+                du -ah $3 | head -n 8
+            else
+                echo "Directory does not eexist"
+            fi
+        else
+            echo "improper usage"
         fi
     else
         echo "error: improper usage"
