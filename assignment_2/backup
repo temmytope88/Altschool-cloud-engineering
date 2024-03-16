@@ -8,10 +8,10 @@ if [[ $# -eq 2 ]]; then
     backup_destination=$2
 
     #check if the directory to backup exists
-    if [[ -e $directory_to_backup ]]; then 
+    if [[ -d $directory_to_backup ]]; then 
         
         #check if the back_up destination exists
-        if [[ -e $backup_destination ]]; then
+        if [[ -d $backup_destination ]]; then
 
             backup_filename="$backup_destination"
 
