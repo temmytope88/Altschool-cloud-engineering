@@ -1,0 +1,17 @@
+---
+- name: Setting up server and deploying a php applcation
+  hosts: slave_webserver
+  tasks:
+    - name: copy script from master to slave server
+      copy: 
+        src: /home/temmytope/projects/ansible_quickstart/examProject/installPackagesFn
+        dest: /tmp/installPackagesFn
+        mode: 0755
+    - name: execute the bash script
+      become: yes
+      command: bash /tmp/installPackagesFn
+      vars:
+        ansible_become_pass: osboxes.org
+    - name: done
+      ansible.builtin.command: echo "***** DONE ******"
+        
