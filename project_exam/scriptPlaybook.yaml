@@ -4,14 +4,20 @@
   tasks:
     - name: copy script from master to slave server
       copy: 
-        src: /home/temmytope/projects/ansible_quickstart/examProject/installPackagesFn
-        dest: /tmp/installPackagesFn
+        src: /home/temmytope/projects/Altschool/cloud-engineering/Altschool-cloud-engineering/project_exam/script
+        dest: /tmp/script
         mode: 0755
     - name: execute the bash script
       become: yes
-      command: bash /tmp/installPackagesFn
+      command: bash /tmp/script
       vars:
-        ansible_become_pass: osboxes.org
+        ansible_become_pass: "osboxes.org"
+    - name: Add cron job to check server uptime
+      cron:
+        name: "check_server_uptime"
+        minute: 0
+        hour: 0
+        job: "uptime >> /var/log/server_uptime.log"
     - name: done
       ansible.builtin.command: echo "***** DONE ******"
         

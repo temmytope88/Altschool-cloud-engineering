@@ -1,38 +1,13 @@
 #!/bin/bash
 
-# function for installing packages
-echo -e "*********======== About to update server =========********\n"
-
-sudo apt update #update the server
 
 #function for installing packages
 function install(){
         #echo -e "\nEnter a list of packages to be installed (separated by spaces)\n"
         #read -r -a packages
-        sudo apt install $1
+        sudo apt install $1 -y
 }
 
-
-#funtion for creating a new user
-function createUser(){
-        if [ -z "$(getent passwd $1)" ]; then
-                echo "User $username does not exist."
-
-                # Create the user with the provided username
-                sudo useradd -m $1
-
-                # Ask the user to set a password for the new user
-                echo "Set a password for the new user:"
-                sudo passwd $1
-
-                # Grant all privileges to the new user
-                sudo usermod -aG sudo $1
-
-                echo "User $username created with all privileges."
-        else
-                echo "User already exists"
-        fi
-}
 
 #function for setting up a new user on the mysql database
 function createMysqlUser(){
@@ -82,7 +57,7 @@ function moveToApacheFolder(){
         mv $1 $2
         if [ -d "$2" ]; then
                 # Move the contents of the source directory to the target directory
-                mv -u "$1"/* "$2"
+                mv -u "$1" "$2"
                 if [ $? -eq 0 ]; then
                         echo "Directory moved successfully."
                 else
@@ -93,8 +68,13 @@ function moveToApacheFolder(){
         fi
 }
 
+#update server
+echo -e "*********======== About to update server =========********\n"
+
+sudo apt update #update the server
+
 #list of packages to be installed
-packages=("mysql-server" "apache2" "git" "composer" "php8.2")
+packages=("apache2" "git")
 
 #looping over the list of packages to be installed
 for package in "${packages[@]}"; do
@@ -102,27 +82,18 @@ for package in "${packages[@]}"; do
     install ${package}
 done
 
-#create a new user aside the root user
-echo -e "\n----------Create a new user---------\n"
-
-username=temmytope
-createUser $username
-
-
 #setting up mysql database for a new user
-mysql_root_password=root
+mysql_root_password="*.Oluwaseyi88.*"
 mysql_user_password="*.Oluwaseyi88.*"
 mysql_username=temmytope
-#createMysqlUser  $mysql_root_password $mysql_username $mysql_user_password
+createMysqlUser  $mysql_root_password $mysql_username $mysql_user_password
 
-
+#clone php web application
 gitUrl="https://github.com/temmytope88/test"
 target_directory="/tmp/test"
 cloneFromGit $gitUrl $target_directory
 
-
+#move the clone app to /var/www/html
 www_path=/var/www/html
-
 cloned_path=/tmp/test
-
 moveToApacheFolder $cloned_path $www_path
