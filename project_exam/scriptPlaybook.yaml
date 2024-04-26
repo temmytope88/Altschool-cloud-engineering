@@ -1,17 +1,24 @@
 ---
 - name: Setting up server and deploying a php applcation
   hosts: slave_webserver
+  vars_files:
+    - .venv
   tasks:
     - name: copy script from master to slave server
       copy: 
         src: /home/temmytope/projects/Altschool/cloud-engineering/Altschool-cloud-engineering/project_exam/script
-        dest: /tmp/script
+        dest: /tmp
+        mode: 0755
+    - name: copy .env file to server
+      copy: 
+        src: /home/temmytope/projects/Altschool/cloud-engineering/Altschool-cloud-engineering/project_exam/.env
+        dest: /tmp
         mode: 0755
     - name: execute the bash script
       become: yes
       command: bash /tmp/script
       vars:
-        ansible_become_pass: "osboxes.org"
+        ansible_become_pass: "{{ SERVER_USER }}"
     - name: Add cron job to check server uptime
       cron:
         name: "check_server_uptime"

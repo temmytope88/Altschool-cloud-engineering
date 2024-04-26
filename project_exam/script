@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source .env
 
 #function for installing packages
 function install(){
@@ -12,15 +12,29 @@ function install(){
 #function for setting up a new user on the mysql database
 function createMysqlUser(){
     # Connect to MySQL and create the new user
-    mysql -u root -p$1 -e "CREATE USER '$2'@'localhost' IDENTIFIED BY '$3';"
+       
+        existing_user=$(mysql -u root -p$1 -e "SELECT user FROM mysql.user WHERE user = '$2';" | grep -o "$2")
+        
+        if [ "$existing_user" == "$2" ]; then
+                echo "User '$2' already exists in MySQL. Not creating the user."
+        else
+                #create a new user
+                mysql -u root -p$1 -e "CREATE USER '$2'@'localhost' IDENTIFIED BY '$3';"
 
-    # Grant all privileges to the new user
-    mysql -u root -p$1 -e "GRANT ALL PRIVILEGES ON *.* TO '$2'@'localhost' WITH GRANT OPTION;"
+                # Grant all privileges to the new user
+                mysql -u root -p$1 -e "GRANT ALL PRIVILEGES ON *.* TO '$2'@'localhost' WITH GRANT OPTION;"
 
-    # Flush privileges to apply changes
-    mysql -u root -p$1 -e "FLUSH PRIVILEGES;"
+                # Flush privileges to apply changes
+                mysql -u root -p$1 -e "FLUSH PRIVILEGES;"
 
-    echo "New MySQL user '$3' created with all privileges."
+                echo "New MySQL user '$2' created with all privileges."
+        fi
+    
+}
+
+function startApacheMysql(){
+        sudo systemctl start apache2
+        sudo systemctl start mysql
 }
 
 #function for cloning the php application from git
@@ -54,17 +68,25 @@ function cloneFromGit(){
 }
 
 function moveToApacheFolder(){
-        mv $1 $2
+
         if [ -d "$2" ]; then
                 # Move the contents of the source directory to the target directory
-                mv -u "$1" "$2"
+                sudo rm -rf $2
+                sudo mv $1 $2
+        
                 if [ $? -eq 0 ]; then
                         echo "Directory moved successfully."
                 else
                         echo "Failed to move directory."
                 fi
         else
-                 mv $1 $2
+                sudo mv $1 $2
+                if [ $? -eq 0 ]; then
+                        echo "Directory moved successfully."
+                else
+                        echo "Failed to move directory."
+                fi
+
         fi
 }
 
@@ -74,7 +96,9 @@ echo -e "*********======== About to update server =========********\n"
 sudo apt update #update the server
 
 #list of packages to be installed
-packages=("apache2" "git")
+
+echo -e "*********======== Install packages =========********\n"
+packages=("apache2" "git" "mysql-server" "composer" "php8.2")
 
 #looping over the list of packages to be installed
 for package in "${packages[@]}"; do
@@ -83,17 +107,22 @@ for package in "${packages[@]}"; do
 done
 
 #setting up mysql database for a new user
-mysql_root_password="*.Oluwaseyi88.*"
-mysql_user_password="*.Oluwaseyi88.*"
-mysql_username=temmytope
-createMysqlUser  $mysql_root_password $mysql_username $mysql_user_password
+echo -e "\n*********======== Setting up mysql server =========********\n"
+
+createMysqlUser  $MYSQL_ROOT_PASSWORD $MYSQL_NEW_USERAME $MYSQL_USER_PASSWORD
+
+#start mysql and apache server
+echo -e "\n*********======== Start Mysql and Apache2 server =========********\n"
+startApacheMysql
 
 #clone php web application
-gitUrl="https://github.com/temmytope88/test"
-target_directory="/tmp/test"
+echo -e "\n*********======== Clone repo from git =========********\n"
+gitUrl="https://github.com/temmytope88/Zuricourse.git"
+target_directory="/tmp/Zuricourse"
 cloneFromGit $gitUrl $target_directory
 
 #move the clone app to /var/www/html
-www_path=/var/www/html
-cloned_path=/tmp/test
+echo -e "\n*********======== move app to apache folder =========********\n"
+www_path=/var/www/html/Zuricourse
+cloned_path=/tmp/Zuricourse
 moveToApacheFolder $cloned_path $www_path
