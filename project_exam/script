@@ -1,5 +1,6 @@
 #!/bin/bash
-source /tmp/.env
+#source /tmp/.env
+source .env
 
 #function for installing packages
 function install(){
@@ -115,14 +116,84 @@ createMysqlUser  $MYSQL_ROOT_PASSWORD $MYSQL_NEW_USERAME $MYSQL_USER_PASSWORD
 echo -e "\n*********======== Start Mysql and Apache2 server =========********\n"
 startApacheMysql
 
-#clone php web application
+#clone laravel web application
 echo -e "\n*********======== Clone repo from git =========********\n"
-gitUrl="https://github.com/temmytope88/Zuricourse.git"
-target_directory="/tmp/Zuricourse"
+gitUrl="https://github.com/laravel/laravel"
+target_directory="/tmp/laravel"
 cloneFromGit $gitUrl $target_directory
 
-#move the clone app to /var/www/html
+#move the clone laravel app to /var/www/
 echo -e "\n*********======== move app to apache folder =========********\n"
-www_path=/var/www/html/Zuricourse
-cloned_path=/tmp/Zuricourse
+www_path=/var/www/laravel
+cloned_path=/tmp/laravel
 moveToApacheFolder $cloned_path $www_path
+
+
+#configure server for hosting laravel
+
+echo -e "\n*********======== Setting server to host laravel application =========********\n"
+
+echo -e "\n*********======== Install composer php dependencies =====********\n"
+
+packages=("php8.2-curl" "php8.2-mbstring" "php8.2-xml" "zip" "unzip" "php8.2-dom")
+
+#looping over the list of packages to be installed
+for package in "${packages[@]}"; do
+    echo -e "\n==========******** About to install ${package} ********========= \n"  
+    install ${package}
+done
+
+#cd to the directory and install laravel
+cd  /var/www/laravel/
+
+echo -e "\n==========******** Installing composer ********========= \n"  
+composer install --optimize-autoloader --no-dev
+
+echo -e "\n==========******* Create .env file ********========= \n" 
+touch .env
+
+echo -e "\n==========******** Copy .env.example to .env file ********========= \n" 
+cp .env.example .env
+
+#update .env file
+sudo sed -i "s/# DB_DATABASE=.*/DB_DATABASE=$LARAVEL_DATABASE_NAME/" /var/www/laravel/.env
+sudo sed -i "s/# DB_HOST=.*/DB_HOST=$DB_HOST/" /var/www/laravel/.env
+sudo sed -i "s/# DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/" /var/www/laravel/.env
+sudo sed -i "s/# DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /var/www/laravel/.env
+sudo sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=$LARAVEL_DATABASE/" /var/www/laravel/.env
+sudo sed -i "s/# DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/laravel/.env
+
+#run important artisan commands
+php artisan key:generate
+php artisan migrate
+
+
+#create and write into laravel.conf file for laravel
+sudo mkdir /etc/apache2/sites-available/
+sudo tee /etc/apache2/sites-available/laravel.conf << EOF
+<VirtualHost *:80>
+   ServerName temmy.dev
+   ServerAdmin webmaster@temmy.dev
+   DocumentRoot /var/www/laravel/public
+
+   <Directory /var/www/laravel/example>
+       AllowOverride All
+       Options Indexes FollowSymLinks Multiviews
+       Require all granted
+   </Directory>
+   ErrorLog \${APACHE_LOG_DIR}/error.log
+   CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+
+#change own to www-data
+sudo chown -R www-data /var/www/laravel/storage
+sudo chown -R www-data /var/www/laravel/bootstrap/cache
+
+
+#activate
+sudo a2enmod rewrite
+sudo a2dissite /etc/apache2/sites-available/000-default.conf
+sudo a2ensite laravel.conf
+sudo systemctl restart apache2
+
