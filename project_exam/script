@@ -1,6 +1,6 @@
 #!/bin/bash
-#source /tmp/.env
-source .env
+source /tmp/.env
+#source .env
 
 #function for installing packages
 function install(){
@@ -156,6 +156,7 @@ echo -e "\n==========******** Copy .env.example to .env file ********========= \
 cp .env.example .env
 
 #update .env file
+echo -e "\n==========******** Update .env File ********========= \n" 
 sudo sed -i "s/# DB_DATABASE=.*/DB_DATABASE=$LARAVEL_DATABASE_NAME/" /var/www/laravel/.env
 sudo sed -i "s/# DB_HOST=.*/DB_HOST=$DB_HOST/" /var/www/laravel/.env
 sudo sed -i "s/# DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/" /var/www/laravel/.env
@@ -163,12 +164,18 @@ sudo sed -i "s/# DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /var/www/laravel/.env
 sudo sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=$LARAVEL_DATABASE/" /var/www/laravel/.env
 sudo sed -i "s/# DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/laravel/.env
 
+#create database
+echo -e "\n==========******** Create database ********========= \n" 
+mysql -u $MYSQL_NEW_USERAME -p$MYSQL_USER_PASSWORD -e "CREATE DATABASE '$LARAVEL_DATABASE_NAME' IF NOT EXIST;"
+
 #run important artisan commands
+echo -e "\n==========******** genarate app key and migrate to database ********========= \n" 
 php artisan key:generate
 php artisan migrate
 
 
 #create and write into laravel.conf file for laravel
+echo -e "\n==========******** create and write into laravel.conf file for laravel ********========= \n" 
 sudo mkdir /etc/apache2/sites-available/
 sudo tee /etc/apache2/sites-available/laravel.conf << EOF
 <VirtualHost *:80>
@@ -187,11 +194,13 @@ sudo tee /etc/apache2/sites-available/laravel.conf << EOF
 EOF
 
 #change own to www-data
+echo -e "\n==========******** Change own to www-data ********========= \n" 
 sudo chown -R www-data /var/www/laravel/storage
 sudo chown -R www-data /var/www/laravel/bootstrap/cache
 
 
 #activate
+echo -e "\n==========******** Activate the laravel site and disable the default ********========= \n" 
 sudo a2enmod rewrite
 sudo a2dissite /etc/apache2/sites-available/000-default.conf
 sudo a2ensite laravel.conf

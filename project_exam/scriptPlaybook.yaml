@@ -1,6 +1,9 @@
 ---
 - name: Setting up server and deploying a php applcation
   hosts: slave_webserver
+  become: yes
+  become_user: osboxes
+  become_method: sudo
   vars_files:
     - .venv
   tasks:
@@ -15,10 +18,7 @@
         dest: /tmp
         mode: 0755
     - name: execute the bash script
-      become: yes
-      command: bash /tmp/script
-      vars:
-        ansible_become_pass: "{{ SERVER_USER }}"
+      command: bash /tmp/script 
     - name: Add cron job to check server uptime
       cron:
         name: "check_server_uptime"
