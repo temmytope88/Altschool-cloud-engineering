@@ -12,19 +12,18 @@
 
 ## STEPS
 
-### 1. SSH into the 'slave' server and create a user with passwordless sudo privileges on all operations 
+### 1. SSH into the 'slave' server and create a user with passwordless sudo privileges on all operations
 
     '''shell
         ssh osboxes@123.12.45.789
         sudo useradd -m temmytope
         sudo passwd temmytope
-        sudo visudo /etc/sudoers
-   '''
+        sudo visudo /etc/sudoers'''
 
 ### 2. Run the script on the master server
 
    '''shell
-    ./script
+        ./script
    '''
 
 ### 3. Run the playbook on the to automate  the deployment on the 'slave' server
