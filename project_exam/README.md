@@ -10,17 +10,25 @@
     1. Execute the bash script on the Slave node and verify that the PHP application is accessible through the VM’s IP address (take screenshot of this as evidence)
     2. Create a cron job to check the server’s uptime every 12am
 
-### STEPS 
+## STEPS
 
-1. SSH into the 'slave' server and create a user with passwordless sudo privileges on all opeartions 
-   """shell
-    ssh osboxes@123.12.45.789
-    sudo useradd -m temmytope
-    sudo passwd temmytope
-    sudo visudo /etc/sudoers
-   """
+### 1. SSH into the 'slave' server and create a user with passwordless sudo privileges on all operations 
 
-2. Run the script on the master server
-   """shell
-   ./script
-   """
+    '''shell
+        ssh osboxes@123.12.45.789
+        sudo useradd -m temmytope
+        sudo passwd temmytope
+        sudo visudo /etc/sudoers
+   '''
+
+### 2. Run the script on the master server
+
+   '''shell
+    ./script
+   '''
+
+### 3. Run the playbook on the to automate  the deployment on the 'slave' server
+
+   '''shell
+        ansible-playbook -i inventory.ini scriptPlaybook.yaml
+   '''
