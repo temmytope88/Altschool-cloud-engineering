@@ -20,15 +20,21 @@ function createMysqlUser(){
                 echo "User '$2' already exists in MySQL. Not creating the user."
         else
                 #create a new user
-                mysql -u root -p$1 -e "CREATE USER '$2'@'localhost' IDENTIFIED BY '$3';"
+                sudo mysql -u root -p$1 -e "CREATE USER '$2'@'localhost' IDENTIFIED BY '$3';"
 
-                # Grant all privileges to the new user
-                mysql -u root -p$1 -e "GRANT ALL PRIVILEGES ON *.* TO '$2'@'localhost' WITH GRANT OPTION;"
+                existing_user=$(mysql -u root -p$1 -e "SELECT user FROM mysql.user WHERE user = '$2';" | grep -o "$2")
 
-                # Flush privileges to apply changes
-                mysql -u root -p$1 -e "FLUSH PRIVILEGES;"
+                if [ "$existing_user" == "$2" ]; then
+                        # Grant all privileges to the new user
+                        sudo mysql -u root -p$1 -e "GRANT ALL PRIVILEGES ON *.* TO '$2'@'localhost' WITH GRANT OPTION;"
 
-                echo "New MySQL user '$2' created with all privileges."
+                        # Flush privileges to apply changes
+                        sudo mysql -u root -p$1 -e "FLUSH PRIVILEGES;"
+
+                        echo "New MySQL user '$2' created with all privileges."
+                else
+                        echo "FAILED: User not create"
+                fi
         fi
     
 }
@@ -135,7 +141,7 @@ echo -e "\n*********======== Setting server to host laravel application ========
 
 echo -e "\n*********======== Install composer php dependencies =====********\n"
 
-packages=("php8.2-curl" "php8.2-mbstring" "php8.2-xml" "zip" "unzip" "php8.2-dom")
+packages=("php8.2-curl" "php8.2-mbstring" "php8.2-xml" "zip" "unzip" "php8.2-dom" "php8.2-mysql")
 
 #looping over the list of packages to be installed
 for package in "${packages[@]}"; do
@@ -166,12 +172,12 @@ sudo sed -i "s/# DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/laravel/.env
 
 #create database
 echo -e "\n==========******** Create database ********========= \n" 
-mysql -u $MYSQL_NEW_USERAME -p$MYSQL_USER_PASSWORD -e "CREATE DATABASE '$LARAVEL_DATABASE_NAME' IF NOT EXIST;"
+mysql -u $MYSQL_NEW_USERAME -p$MYSQL_USER_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $LARAVEL_DATABASE_NAME;"
 
 #run important artisan commands
 echo -e "\n==========******** genarate app key and migrate to database ********========= \n" 
-php artisan key:generate
-php artisan migrate
+sudo php artisan key:generate
+sudo php artisan migrate
 
 
 #create and write into laravel.conf file for laravel
@@ -183,7 +189,7 @@ sudo tee /etc/apache2/sites-available/laravel.conf << EOF
    ServerAdmin webmaster@temmy.dev
    DocumentRoot /var/www/laravel/public
 
-   <Directory /var/www/laravel/example>
+   <Directory /var/www/laravel/public>
        AllowOverride All
        Options Indexes FollowSymLinks Multiviews
        Require all granted
@@ -202,7 +208,7 @@ sudo chown -R www-data /var/www/laravel/bootstrap/cache
 #activate
 echo -e "\n==========******** Activate the laravel site and disable the default ********========= \n" 
 sudo a2enmod rewrite
-sudo a2dissite /etc/apache2/sites-available/000-default.conf
+sudo a2dissite 000-default.conf
 sudo a2ensite laravel.conf
 sudo systemctl restart apache2
 

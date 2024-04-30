@@ -2,10 +2,8 @@
 - name: Setting up server and deploying a php applcation
   hosts: slave_webserver
   become: yes
-  become_user: osboxes
-  become_method: sudo
-  vars_files:
-    - .venv
+  become_method: su
+  become_user: temmytope
   tasks:
     - name: copy script from master to slave server
       copy: 
@@ -17,8 +15,16 @@
         src: /home/temmytope/projects/Altschool/cloud-engineering/Altschool-cloud-engineering/project_exam/.env
         dest: /tmp
         mode: 0755
-    - name: execute the bash script
-      command: bash /tmp/script 
+    - name: execute the bash script      
+      command: /tmp/script 
+      ignore_errors: no # Ignore errors during script execution
+      register: script_result
+
+    - name: Check for errors in script execution
+      fail:
+        msg: "Script execution failed on {{ inventory_hostname }}"
+      when: script_result is failed
+
     - name: Add cron job to check server uptime
       cron:
         name: "check_server_uptime"
@@ -27,4 +33,6 @@
         job: "uptime >> /var/log/server_uptime.log"
     - name: done
       ansible.builtin.command: echo "***** DONE ******"
+        
+
         
