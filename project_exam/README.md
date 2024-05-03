@@ -40,7 +40,7 @@
 ![Alt text](./images/script5.png)
 ![Alt text](./images/script6.png)
 
-The image below shows the result using the master server IP as URL
+The image below shows the result using the master server IP address as URL
 
 ![Alt text](./images/laravelpageMaster.png)
 
@@ -51,6 +51,6 @@ The image below shows the result using the master server IP as URL
     ```
 ![Alt text](./images/playbookscreen.png.png)
 
-The image below shows the result using the master server IP as URL
+The image below shows the result using the slave server IP address as URL
 
 ![Alt text](./images/slaveip.png)
