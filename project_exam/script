@@ -97,6 +97,43 @@ function moveToApacheFolder(){
         fi
 }
 
+function activateSite(){
+         
+        sudo a2enmod rewrite
+        sudo a2dissite 000-default.conf
+        sudo a2ensite laravel.conf
+        sudo systemctl restart apache2
+
+}
+
+
+function updateLaravelEnv(){
+        sudo sed -i "s/# DB_DATABASE=.*/DB_DATABASE=$LARAVEL_DATABASE_NAME/" /var/www/laravel/.env
+        sudo sed -i "s/# DB_HOST=.*/DB_HOST=$DB_HOST/" /var/www/laravel/.env
+        sudo sed -i "s/# DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/" /var/www/laravel/.env
+        sudo sed -i "s/# DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /var/www/laravel/.env
+        sudo sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=$LARAVEL_DATABASE/" /var/www/laravel/.env
+        sudo sed -i "s/# DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/laravel/.env
+}
+
+function siteConfiguration(){
+        sudo mkdir /etc/apache2/sites-available/
+sudo tee /etc/apache2/sites-available/laravel.conf << EOF
+<VirtualHost *:80>
+   ServerName temmy.dev
+   ServerAdmin webmaster@temmy.dev
+   DocumentRoot /var/www/laravel/public
+
+   <Directory /var/www/laravel/public>
+       AllowOverride All
+       Options Indexes FollowSymLinks Multiviews
+       Require all granted
+   </Directory>
+   ErrorLog \${APACHE_LOG_DIR}/error.log
+   CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+}
 #update server
 echo -e "*********======== About to update server =========********\n"
 
@@ -163,12 +200,7 @@ cp .env.example .env
 
 #update .env file
 echo -e "\n==========******** Update .env File ********========= \n" 
-sudo sed -i "s/# DB_DATABASE=.*/DB_DATABASE=$LARAVEL_DATABASE_NAME/" /var/www/laravel/.env
-sudo sed -i "s/# DB_HOST=.*/DB_HOST=$DB_HOST/" /var/www/laravel/.env
-sudo sed -i "s/# DB_USERNAME=.*/DB_USERNAME=$DB_USERNAME/" /var/www/laravel/.env
-sudo sed -i "s/# DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /var/www/laravel/.env
-sudo sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=$LARAVEL_DATABASE/" /var/www/laravel/.env
-sudo sed -i "s/# DB_PORT=.*/DB_PORT=$DB_PORT/" /var/www/laravel/.env
+updateLaravelEnv
 
 #create database
 echo -e "\n==========******** Create database ********========= \n" 
@@ -182,33 +214,16 @@ sudo php artisan migrate
 
 #create and write into laravel.conf file for laravel
 echo -e "\n==========******** create and write into laravel.conf file for laravel ********========= \n" 
-sudo mkdir /etc/apache2/sites-available/
-sudo tee /etc/apache2/sites-available/laravel.conf << EOF
-<VirtualHost *:80>
-   ServerName temmy.dev
-   ServerAdmin webmaster@temmy.dev
-   DocumentRoot /var/www/laravel/public
+siteConfiguration
 
-   <Directory /var/www/laravel/public>
-       AllowOverride All
-       Options Indexes FollowSymLinks Multiviews
-       Require all granted
-   </Directory>
-   ErrorLog \${APACHE_LOG_DIR}/error.log
-   CustomLog \${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-EOF
-
-#change own to www-data
-echo -e "\n==========******** Change own to www-data ********========= \n" 
+#change owner to www-data
+echo -e "\n==========******** Change owner to www-data ********========= \n" 
 sudo chown -R www-data /var/www/laravel/storage
 sudo chown -R www-data /var/www/laravel/bootstrap/cache
 
 
 #activate
-echo -e "\n==========******** Activate the laravel site and disable the default ********========= \n" 
-sudo a2enmod rewrite
-sudo a2dissite 000-default.conf
-sudo a2ensite laravel.conf
-sudo systemctl restart apache2
+echo -e "\n==========******** Activate the laravel site and disable the default ********========= \n"
+activateSite
+
 
