@@ -20,7 +20,7 @@
 
 ### 1. SSH into the 'slave' server and create a user with passwordless sudo privileges on all operations
 
-    ```shell
+    ``` bash
     ssh osboxes@123.12.45.789
     sudo useradd -m temmytope
     sudo passwd temmytope
@@ -30,7 +30,7 @@
 
 ### 2. Run the script on the master server
 
-    ``` shell
+    ``` bash
     ./script
     ```
 ![Alt text](./images/script1.png)
@@ -46,7 +46,7 @@ The image below shows the result using the master server IP address as URL
 
 ### 3. Run the playbook on the master server the to automate  the deployment to the 'slave' server
 
-    ``` shell
+    ``` bash
     ansible-playbook -i inventory.ini scriptPlaybook.yaml
     ```
 ![Alt text](./images/playbookscreen.png)
