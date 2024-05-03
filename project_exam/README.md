@@ -49,7 +49,7 @@ The image below shows the result using the master server IP address as URL
     ``` shell
         ansible-playbook -i inventory.ini scriptPlaybook.yaml
     ```
-![Alt text](./images/playbookscreen.png.png)
+![Alt text](./images/playbookscreen.png)
 
 The image below shows the result using the slave server IP address as URL
 
