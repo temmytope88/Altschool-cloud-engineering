@@ -5,8 +5,8 @@
 
 ## Pre-requisite
 
-1. AWS account and familiarity with the AWS console.
-2. Basic Knowledge of AWS services
+1. AWS account.
+2. Basic Knowledge of AWS services and console
 3. A static website ready to be hosted
 
 ## INTRODUCTION
