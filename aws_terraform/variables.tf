@@ -5,7 +5,7 @@ variable "bucketname" {
 }
 
 variable "region" {
-  default     = "eu-north-1"
+  default     = "us-east-1"
   description = "the name of the region"
   type        = string
 }
