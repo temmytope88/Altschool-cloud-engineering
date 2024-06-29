@@ -16,3 +16,9 @@ variable "account_id" {
   description = "your aws account id"
 
 }
+
+variable "domain_name" {
+  default     = "temmytope.com.ng"
+  description = "the name of the region"
+  type        = string
+}
